@@ -13,29 +13,26 @@ bot({
     // 1. Validation: Check if the user provided a search query/image name
     const query = match[1];
     if (!query) {
-        return await message.send('*Please provide a name or query for the image! Example: .image cat*');
+        return await message.send('*Please provide a name or query for the image! Example: .image anime wallpaper*');
     }
 
     // Inform the user that the image is being searched and downloaded
     await message.send(`*Searching for "${query}"... 🔍*`);
 
     try {
-        // 2. Fetching image from an API (Using a reliable public image/wallpaper source)
-        // Yahan hum ek public image search API ka use kar rahe hain jo direct image URL degi
-        const apiUrl = `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)}&client_id=YOUR_UNSPLASH_ACCESS_KEY`; 
+        // 2. Fetching image from the new Sayan Nexuswork Pinterest API
+        const apiUrl = `https://api.sayan-nexuswork.workers.dev/pinterest?q=${encodeURIComponent(query)}&type=image&limit=5`;
         
-        // Alternativly, agar aapko bina API Key ke simple web scraping ya koi aur API use karni hai:
-        // Jaise koi random image generator ya free meme/image endpoint:
-        const searchUrl = `https://nekos.best/api/v2/search?query=${encodeURIComponent(query)}&type=1`;
-        
-        const response = await axios.get(`https://deliriussapi-oficial.vercel.app/search/pinterest?query=${encodeURIComponent(query)}`);
+        const response = await axios.get(apiUrl);
 
-        // Check if the API returned results (Pinterest scraper example, bohot popular hai WhatsApp bots me)
-        if (response.data && response.data.status && response.data.result && response.data.result.length > 0) {
-            // Randomly pick one image from the search results
-            const images = response.data.result;
+        // Check if the API returned results successfully
+        if (response.data && response.data.status && response.data.data && response.data.data.length > 0) {
+            // Randomly pick one image from the search results array
+            const images = response.data.data;
             const randomImage = images[Math.floor(Math.random() * images.length)];
-            const imageUrl = randomImage; // direct image url
+            
+            // Assuming the API returns image links directly inside the array or as objects
+            const imageUrl = typeof randomImage === 'string' ? randomImage : (randomImage.image || randomImage.url || randomImage);
 
             // 3. Send the image to the chat using message.send with image url or media options
             await message.send(imageUrl, { 
